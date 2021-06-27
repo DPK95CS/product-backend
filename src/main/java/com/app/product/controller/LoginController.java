@@ -1,44 +1,35 @@
 package com.app.product.controller;
 
 import com.app.product.dto.LoginDto;
-import com.app.product.model.Users;
-import com.app.product.repository.UserRepository;
-import com.app.product.utility.ValidationUtility;
+import com.app.product.service.LoginService;
+import com.app.product.utility.Utility;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @RestController
 public class LoginController {
 
     @Autowired
-    private UserRepository userRepository;
+    private Utility utility;
     @Autowired
-    private ValidationUtility validationUtility;
+    private LoginService loginService;
 
     @PostMapping("/login")
     public String login(@RequestBody LoginDto loginDto) {
         String email = loginDto.getEmail();
         String password = loginDto.getPassword();
-        if (!validationUtility.validateInput(email) || !validationUtility.validateInput(password))
+        if (!utility.validateInput(email) || !utility.validateInput(password))
             return "Please provide all mandatory data";
-
-        List<Users> usersList = userRepository.findByEmail(email);
-        if (usersList == null || usersList.isEmpty()) // new user
-        {
-            return "User does not exists for " + email + " Please signup..";
-        } else {
-            if (password.equals(usersList.get(0).getPassword())) {
-                return "User logged in successfully.";
-            } else {
-                return "Password is wrong. Please enter correct password ";
-            }
-        }
+        return loginService.login(email, password);
     }
 
-
-    //logout
+    @PostMapping("/logout")
+    public String logout(@RequestBody LoginDto loginDto) {
+        String email = loginDto.getEmail();
+        if (!utility.validateInput(email))
+            return "Please provide all mandatory data";
+        return loginService.logout(email);
+    }
 }
